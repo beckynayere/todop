@@ -1,38 +1,31 @@
-// const mix = require('laravel-mix');
-
-// Dynamic import to load the webpack configuration
-// import('./webpack.mix.cjs').then(config => {
-    /*
-    |--------------------------------------------------------------------------
-    | Mix Asset Management
-    |--------------------------------------------------------------------------
-    |
-    | Mix provides a clean, fluent API for defining some Webpack build steps
-    | for your Laravel application. By default, we are compiling the Sass
-    | file for the application as well as bundling up all the JS files.
-    |
-    */
-
-    // Use the loaded config object to configure Mix
-//     mix.js('resources/js/app.js', 'public/js').vue()
-//         .sass('resources/sass/app.scss', 'public/css')
-//         .sourceMaps();
-// });
-
 const mix = require('laravel-mix');
-const config = require('./webpack.mix.cjs');
 
-/*
-|--------------------------------------------------------------------------
-| Mix Asset Management
-|--------------------------------------------------------------------------
-|
-| Mix provides a clean, fluent API for defining some Webpack build steps
-| for your Laravel application. By default, we are compiling the Sass
-| file for the application as well as bundling up all the JS files.
-|
-*/
+mix.webpackConfig({
+    module: {
+        rules: [
+            {
+                test: /\.m?js$/,
+                exclude: /(node_modules|bower_components)/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env'],
+                        plugins: ['@babel/plugin-syntax-dynamic-import']
+                    }
+                }
+            }
+        ]
+    }
+});
 
 mix.js('resources/js/app.js', 'public/js').vue()
     .sass('resources/sass/app.scss', 'public/css')
-    .sourceMaps();
+    .postCss('resources/css/app.css', 'public/css', [
+        require('postcss'),
+        require('resolve-url-loader')
+    ])
+    .options({
+        processCssUrls: false, // Disable URL processing in the sass-loader
+        postCss: [require('resolve-url-loader')]
+    });
+
