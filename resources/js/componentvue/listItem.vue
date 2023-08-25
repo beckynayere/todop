@@ -1,28 +1,58 @@
 <template>
-    <div class="mt-4">
-        <h4>list view</h4>
-        <hr class="w-50 m-auto mb-3" />
-        <ul class="list-group m-auto">
-            <list-item
-                :item="item"
-                v-on:itemchanged="$emit('reloadlist')"
-                v-for="item in items"
-                :key="item.id"
-                class="m-auto my-1 text-justify text-wrap"
-            />
-        </ul>
-    </div>
+    <li class="list-group-item d-flex justify-content-between w-50">
+        <input
+            type="checkbox"
+            @change="updateCheck()"
+            v-model="item.completed"
+            class="mr-3"
+        />
+        <span :class="[item.completed ? 'completed' : '', 'item']">{{
+            item.name
+        }}</span>
+        <button class="btn-danger ml-3" @click="removeItem()">X</button>
+    </li>
 </template>
 
 <script>
-import listItem from "./listItem";
-
 export default {
-    components: {
-        listItem
-    },
-    props: ["items"]
+    props: ["item"],
+    methods: {
+        updateCheck() {
+            axios
+                .put(`api/item/${this.item.id}`, {
+                    item: this.item
+                })
+                .then(res => {
+                    if (res.status == 200) {
+                        this.$emit("itemchanged");
+                    }
+                })
+                .catch(error => {
+                    console.log("error from axios put", errors);
+                });
+        },
+        removeItem() {
+            axios
+                .delete(`api/item/${this.item.id}`)
+                .then(res => {
+                    if (res.status == 200) {
+                        this.$emit("itemchanged");
+                    }
+                })
+                .catch(error => {
+                    console.log("error from axios delte ", error);
+                });
+        }
+    }
 };
 </script>
 
-<style scoped></style>
+<style>
+.completed {
+    text-decoration: line-through;
+    color: gray;
+}
+.item {
+    word-break: break-all;
+}
+</style>
